@@ -1,18 +1,16 @@
-from aiogram import Bot, Dispatcher, executor, types
+import telebot
 import os
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-bot = Bot(token=TOKEN)
-dp = Dispatcher(bot)
+bot = telebot.TeleBot(TOKEN)
 
-@dp.message_handler(commands=["start"])
-async def start(message: types.Message):
-    await message.reply("سلام 👋\nربات RiseMind فعال شد 🤖")
+@bot.message_handler(commands=['start'])
+def start(message):
+    bot.reply_to(message, "سلام 👋\nربات RiseMind فعال شد 🤖")
 
-@dp.message_handler(commands=["help"])
-async def help_cmd(message: types.Message):
-    await message.reply("دستورات:\n/start\n/help")
+@bot.message_handler(commands=['help'])
+def help_cmd(message):
+    bot.reply_to(message, "دستورات:\n/start\n/help")
 
-if __name__ == "__main__":
-    executor.start_polling(dp, skip_updates=True)
+bot.infinity_polling()
