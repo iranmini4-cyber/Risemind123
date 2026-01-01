@@ -2,7 +2,6 @@ import telebot
 import os
 import requests
 from bs4 import BeautifulSoup
-from youtubesearchpython import VideosSearch
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 TOKEN = os.getenv("BOT_TOKEN")
@@ -11,9 +10,7 @@ bot = telebot.TeleBot(TOKEN)
 # ===================== دکمه‌ها =====================
 def start_buttons():
     markup = InlineKeyboardMarkup()
-    # دکمه پیام به مدیر
     markup.add(InlineKeyboardButton("پیام دادن به من", url="https://t.me/MINYATOOOOR"))
-    # دکمه افزودن به گروه
     markup.add(InlineKeyboardButton("اضافه کردن به گروه", url=f"https://t.me/{bot.get_me().username}?startgroup=true"))
     return markup
 
@@ -25,29 +22,17 @@ def start(message):
 # ===================== /help =====================
 @bot.message_handler(commands=['help'])
 def help_cmd(message):
-    bot.send_message(message.chat.id, "دستورات:\n/start\n/help\n/song [اسم آهنگ]", reply_markup=start_buttons())
+    bot.send_message(message.chat.id, "دستورات:\n/start\n/help\n/song [اسم آهنگ]\n/ping", reply_markup=start_buttons())
 
-# ===================== جستجوی یوتیوب =====================
-def search_youtube(query):
-    try:
-        videosSearch = VideosSearch(query, limit=3)
-        results = videosSearch.result()['result']
-        reply = []
-        for video in results:
-            reply.append(f"{video['title']}\n{video['link']}")
-        return reply
-    except:
-        return []
-
-# ===================== جستجوی سایت ایرانی =====================
+# ===================== جستجوی سایت‌های ایرانی =====================
 def search_site(url, query, selector, prefix=""):
     try:
         full_url = f"{url}{query.replace(' ', '+')}"
         headers = {"User-Agent": "Mozilla/5.0"}
-        res = requests.get(full_url, headers=headers)
+        res = requests.get(full_url, headers=headers, timeout=5)
         soup = BeautifulSoup(res.text, "html.parser")
         results = []
-        for item in soup.select(selector)[:3]:  # ۳ نتیجه اول
+        for item in soup.select(selector)[:3]:
             title = item.get_text(strip=True)
             link = item.get("href")
             if not link.startswith("http"):
@@ -56,9 +41,6 @@ def search_site(url, query, selector, prefix=""):
         return results
     except:
         return []
-
-def search_aha(query):
-    return search_site("https://aha.ng/search?q=", query, "a.song-title")
 
 def search_musics_fa(query):
     return search_site("https://musics-fa.com/?s=", query, "h2.entry-title a")
@@ -72,11 +54,8 @@ def search_upmusics(query):
 def search_resanejavan(query):
     return search_site("https://resanejavan.net/?s=", query, "h2.entry-title a")
 
-# ===================== جستجوی آهنگ =====================
 def search_all(query):
     results = []
-    results += search_youtube(query)
-    results += search_aha(query)
     results += search_musics_fa(query)
     results += search_rozmusic(query)
     results += search_upmusics(query)
@@ -110,6 +89,15 @@ def auto_play(message):
             bot.reply_to(message, "\n\n".join(all_results))
         else:
             bot.reply_to(message, "جستجو کردم، همچین آهنگی پیدا نکردم.")
+
+# ===================== /ping =====================
+@bot.message_handler(commands=['ping'])
+def ping_cmd(message):
+    bot.reply_to(message, "ربات فعاله ✅")
+
+@bot.message_handler(func=lambda m: m.text and m.text.lower() in ["ping", "پینگ"])
+def ping_text(message):
+    bot.reply_to(message, "ربات فعاله ✅")
 
 # ===================== اجرای ربات =====================
 bot.infinity_polling()
