@@ -1,7 +1,7 @@
 from aiogram import Bot, Dispatcher, executor, types
 import os
 
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("BOT_TOKEN")  # ⚡ توکن فقط در Render ذخیره میشه، نه اینجا
 
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot)
